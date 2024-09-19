@@ -86,7 +86,7 @@ export default function Navbar() {
                   type="button"
                   className="relative  text-gray-400 hover:text-white focus:outline-none focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-gray-800"
                 >
-                 <span className=' text-2xl text-white font-semibold'>
+                 <span className=' text-2xl hidden sm:block text-white font-semibold'>
 
            {user.Fname}
                  </span>

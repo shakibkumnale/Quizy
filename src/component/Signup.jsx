@@ -9,18 +9,21 @@ import SuccessAlert2 from "./alert";
 import axios from "axios";
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../store/auth";
+import { FaSpinner } from "react-icons/fa";
+
 export default function Signup() {
   const { stroteTokenInLS } = useAuth();
   const navigate = useNavigate();
   const [reado, setReado] = useState("");
+  const [loading, setLoading] = useState(false); // For loading spinner
+
   const [dAlert, setDAlert] = useState({
     bodercolor: "border-[#ff0000]",
     txtcolor: "text-[#ff0000]",
-
     bgcolor: "bg-[#ff0000]",
     icon: "bg-[#0c2e0c]",
     headtitle: "Failed server Error",
-    msg: "Please  angain later",
+    msg: "Please try again later",
   });
 
   let name, valiue, pass, passC;
@@ -29,9 +32,9 @@ export default function Signup() {
   });
 
   const handleValueChange = (newValue) => {
-    console.log("newValue:", newValue);
     setUser({ ...user, DOB: newValue });
   };
+
   const [autoclose, setAutoclose] = useState(false);
   const [passmatch, setPassmatch] = useState(false);
   const [user, setUser] = useState({
@@ -42,83 +45,57 @@ export default function Signup() {
     CPassword: "",
     OTP: "",
   });
+
   const onChangeInput = (event) => {
-    // console.log(event);
     name = event.target.name;
     valiue = event.target.value;
     setUser({
       ...user,
       [name]: valiue,
     });
-    console.log(user);
-    // execpt password Cpassword and city
   };
+
   const otpGenerate = async (event) => {
     event.preventDefault();
+    setLoading(true);
     try {
       if (user.Email !== "") {
-        // setBClr("bg-gray-400 cursor-not-allowed ")
-        // setReado("disabled");
-        // setTimeout(() => {
-        //   // setBClr("bg-blue-500 hover:bg-blue-600")
-        //   setReado("");
-        // }, 60000);
-        //  mobile use change the ip
-
-        // const otpres = await axios.post("http://192.168.1.208:3001/otp", user);
-        // pc use
         const otpres = await axios.post(`${import.meta.env.VITE_APP_API_URL}/otp`, user);
         if (otpres.data === "done") {
           setDAlert({
             bodercolor: "border-[#00ff00]",
             txtcolor: "text-[#00ff00]",
-
             bgcolor: "bg-[#00ff00]",
             icon: "bg-[#0c2e0c]",
-            headtitle: "OTP send Successfully ",
-            msg: "check your mail box",
+            headtitle: "OTP sent Successfully",
+            msg: "Check your mailbox",
           });
-          setAutoclose(true);
-          setTimeout(() => {
-            setAutoclose(false);
-          }, 6000);
+        } else {
+          setDAlert({
+            bodercolor: "border-[#ffff00]",
+            txtcolor: "text-[#ffff00]",
+            bgcolor: "bg-[#ffff00]",
+            icon: "bg-[#0c2e0c]",
+            headtitle: "Enter email",
+            msg: "Please enter an email",
+          });
         }
-      } else {
-        console.log("email is mt");
-        setDAlert({
-          bodercolor: "border-[#ffff00]",
-          txtcolor: "text-[#ffff00]",
-
-          bgcolor: "bg-[#ffff00]",
-          icon: "bg-[#0c2e0c]",
-          headtitle: "Enter email",
-          msg: "please enter email",
-        });
-        setAutoclose(true);
-        setTimeout(() => {
-          setAutoclose(false);
-        }, 6000);
-        // setTitles('enter Email');
-        // setTimeout(() => {
-
-        //   setTitles("");
-        // }, 3000);
       }
     } catch (error) {
       setDAlert({
         bodercolor: "border-[#ff0000]",
         txtcolor: "text-[#ff0000]",
-
         bgcolor: "bg-[#ff0000]",
         icon: "bg-[#0c2e0c]",
-        headtitle: "server Error",
-        msg: "try again later",
+        headtitle: "Server Error",
+        msg: "Try again later",
       });
+    } finally {
+      setLoading(false);
       setAutoclose(true);
       setTimeout(() => {
         setAutoclose(false);
       }, 6000);
-      console.log(error + " otpgenerate api from signin page");
     }
   };
 
@@ -126,7 +103,7 @@ export default function Signup() {
     pass = document.getElementById("Password").value;
     passC = document.getElementById("PasswordC").value;
 
-    setUser({ ...user, Password: pass, CPassword: passC }); // here we set pass.. Cpass..
+    setUser({ ...user, Password: pass, CPassword: passC });
 
     if (pass === passC) {
       setPassmatch(true);
@@ -134,144 +111,96 @@ export default function Signup() {
       setPassmatch(false);
     }
   };
+
   const signup = async (event) => {
     event.preventDefault();
+    setLoading(true);
     try {
       if (passmatch) {
-        // const res = await axios.post("http://"+/*192.168.1.208*/"localhost:3001/form", user)
-        //  mobile use change the ip
-
-        // const res = await axios.post("http://192.168.1.208:3001/form", user);
-        // const respons = await axios.post("${import.meta.env.VITE_APP_API_URL}/api/users/register", user);
-        const res = await axios.post(`${import.meta.env.VITE_APP_API_URL}/users/register`,user);
-        console.log(res.data);
-        
-        console.log(res.data, res.data.message);
-        console.log(res.data, res.data.message);
-        // console.log(res.data.keyPattern);
+        const res = await axios.post(`${import.meta.env.VITE_APP_API_URL}/users/register`, user);
         if (res.data.message === "success") {
           setDAlert({
             bodercolor: "border-[#00ff00]",
             txtcolor: "text-[#00ff00]",
-
             bgcolor: "bg-[#00ff00]",
             icon: "bg-[#0c2e0c]",
             headtitle: "Successfully Registered",
-            msg: "Now you can login",
+            msg: "Now you can log in",
           });
-          setAutoclose(true);
-          setTimeout(() => {
-            setAutoclose(false);
-          }, 3000);
           stroteTokenInLS(res.data.token);
-          navigate("/");
-          //   setSwicth(false);
-          //   setLg("shadowinner bg-white  font-semibold text-xl transition-all duration-300 rounded-es-[45px]");
-          //   setSg(" bg-gray-200 text-black font-normal text-base transition-all duration-300 rounded-ee-[45px] ")
-          // alert("successfully submited"+res.data);
-        } else if (res.data.message === "invalid") {
-          setDAlert({
-            bodercolor: "border-[#ff0000]",
-            txtcolor: "text-[#ff0000]",
-
-            bgcolor: "bg-[#ff0000]",
-            icon: "bg-[#0c2e0c]",
-            headtitle: "invailid OTP",
-            msg: "try again",
-            
-          });
-          setAutoclose(true);
-          setTimeout(() => {
-            setAutoclose(false);
-          }, 6000);
-          return 
-        } 
-         else if (res.data.message === "invailid_pass") {
-          setDAlert({
-            bodercolor: "border-[#ff0000]",
-            txtcolor: "text-[#ff0000]",
-
-            bgcolor: "bg-[#ff0000]",
-            icon: "bg-[#0c2e0c]",
-            headtitle: "Minimum length 8 Must have @&NT*S7",
-            msg: "try again",
-          });
-          setAutoclose(true);
-          setTimeout(() => {
-            setAutoclose(false);
-          }, 6000);
+          navigate("/select");
         } else {
-          if (res.data.code === 11000 && res.data.keyPattern.Email) {
-            setDAlert({
-              bodercolor: "border-[#ffff00]",
-              txtcolor: "text-[#ffff00]",
-
-              bgcolor: "bg-[#ffff00]",
-              icon: "bg-[#0c2e0c]",
-              headtitle: "Email already exists",
-              msg: "Use different email or Login",
-            });
-            setAutoclose(true);
-            setTimeout(() => {
-              setAutoclose(false);
-            }, 6000);
-          }  else {
-            setDAlert({
-              bodercolor: "border-[#ff0000]",
-              txtcolor: "text-[#ff0000]",
-
-              bgcolor: "bg-[#ff0000]",
-              icon: "bg-[#0c2e0c]",
-              headtitle: "server Error",
-              msg: "try again later",
-            });
-            setAutoclose(true);
-            setTimeout(() => {
-              setAutoclose(false);
-            }, 6000);
-          }
+          handleErrorAlert(res.data);
         }
       } else {
         setDAlert({
           bodercolor: "border-[#ffff00]",
           txtcolor: "text-[#ffff00]",
-
           bgcolor: "bg-[#ffff00]",
           icon: "bg-[#0c2e0c]",
-          headtitle: "pass not match",
-          msg: "re-Enter the password",
+          headtitle: "Password Mismatch",
+          msg: "Re-enter the password",
         });
-        setAutoclose(true);
-        setTimeout(() => {
-          setAutoclose(false);
-        }, 6000);
-        // setTitles("password not match");
       }
     } catch (error) {
-      console.log(error + "registration api from signin page");
-
       setDAlert({
         bodercolor: "border-[#ff0000]",
         txtcolor: "text-[#ff0000]",
-
         bgcolor: "bg-[#ff0000]",
         icon: "bg-[#0c2e0c]",
-        headtitle: "server Error",
-        msg: "try again later",
+        headtitle: "Server Error",
+        msg: "Try again later",
       });
+    } finally {
+      setLoading(false);
       setAutoclose(true);
       setTimeout(() => {
         setAutoclose(false);
       }, 6000);
-      //   setTitles("Server Error");
-
-      //   setTimeout(() => {
-      //     setTitleslog('');
-      //   }, 3000);
     }
   };
-  const { isLoggedIn } = useAuth();
 
+  const handleErrorAlert = (data) => {
+    if (data.message === "invalid") {
+      setDAlert({
+        bodercolor: "border-[#ff0000]",
+        txtcolor: "text-[#ff0000]",
+        bgcolor: "bg-[#ff0000]",
+        icon: "bg-[#0c2e0c]",
+        headtitle: "Invalid OTP",
+        msg: "Try again",
+      });
+    } else if (data.message === "invalid_pass") {
+      setDAlert({
+        bodercolor: "border-[#ff0000]",
+        txtcolor: "text-[#ff0000]",
+        bgcolor: "bg-[#ff0000]",
+        icon: "bg-[#0c2e0c]",
+        headtitle: "Invalid Password",
+        msg: "Password must have at least 8 characters, one uppercase, and one special character.",
+      });
+    } else if (data.code === 11000 && data.keyPattern.Email) {
+      setDAlert({
+        bodercolor: "border-[#ffff00]",
+        txtcolor: "text-[#ffff00]",
+        bgcolor: "bg-[#ffff00]",
+        icon: "bg-[#0c2e0c]",
+        headtitle: "Email Already Exists",
+        msg: "Use a different email or log in",
+      });
+    } else {
+      setDAlert({
+        bodercolor: "border-[#ff0000]",
+        txtcolor: "text-[#ff0000]",
+        bgcolor: "bg-[#ff0000]",
+        icon: "bg-[#0c2e0c]",
+        headtitle: "Server Error",
+        msg: "Try again later",
+      });
+    }
+  };
+
+  const { isLoggedIn } = useAuth();
   if (isLoggedIn) {
     return navigate("/");
   }
@@ -481,22 +410,30 @@ export default function Signup() {
               </div>
             </div>
 
-            <div className="mt-6">
-              <input
-                type="submit"
-                value="submit"
-                className="w-full px-6 py-3 text-sm font-medium tracking-wide text-white capitalize transition-colors duration-300 transform bg-[#19444a] rounded-lg hover:bg-[#19444ae6]  focus:outline-none focus:ring focus:ring-blue-300 focus:ring-opacity-50"
-              />
-
-              <div className="mt-6 text-center ">
-                <a
-                  href="/login"
-                  className="text-sm text-blue-500 hover:underline dark:text-blue-400"
-                >
-                  Already have an account?
-                </a>
+            {/* Loading Spinner */}
+            {loading ? (
+              <div className="flex justify-center my-4">
+                <FaSpinner className="animate-spin h-8 w-8 text-blue-500" />
               </div>
+            ) : (<>
+              <div className="mt-6">
+                <input
+                  type="submit"
+                  value="Submit"
+                  className="w-full px-6 py-3 text-sm font-medium tracking-wide text-white capitalize transition-colors duration-300 transform bg-[#19444a] rounded-lg hover:bg-[#19444ae6] focus:outline-none focus:ring focus:ring-blue-300 focus:ring-opacity-50"
+                />
+              </div>
+              <div className="mt-6 text-center ">
+              <a
+                href="/login"
+                className="text-sm text-blue-500 hover:underline dark:text-blue-400"
+              >
+                Already have an account?
+              </a>
             </div>
+          </>
+            )}
+              
           </form>
         </div>
       </section>
